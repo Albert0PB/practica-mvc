@@ -44,7 +44,7 @@ foreach( $datos as $registro )
     </fieldset>
     <input type="hidden" name="email" id="email" value="<?=$_SESSION['email']?>">
     <input type="hidden" name="fecha_inscripcion" id="fecha_inscripcion" value="<?=date("Y-m-d")?>">
-    <input type="hidden" name="operacion" id="operacion" value="Registrar">
+    <input type="hidden" name="idp" id="idp" value="Registrar">
     <input type="submit" value="Enviar">
 </form>
 
