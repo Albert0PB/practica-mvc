@@ -1,5 +1,7 @@
 <?php
 
+namespace mvc\vista;
+
 require_once($_SERVER['DOCUMENT_ROOT'] . "/util/Html.php");
 
 use util\Html;
@@ -12,6 +14,8 @@ abstract class Vista
     {
         $this->html = new Html();
     }
+
+    abstract function genera_salida( array $datos );
 
     public function inicio_html( string $titulo)
     {

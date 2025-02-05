@@ -13,7 +13,7 @@ class Autocarga
     {
         $nombre_depurado = str_replace("\\", "/", $clase);
         $ruta = $_SERVER['DOCUMENT_ROOT'] . "/" . $nombre_depurado . ".php";
-        if( !class_exists($ruta) ) echo "Error en la carga de $nombre_depurado.";
+        if( !file_exists($ruta) ) echo "Error en la carga de $nombre_depurado.";
         require_once($ruta);
     }
 }

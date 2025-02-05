@@ -3,13 +3,12 @@
 namespace orm;
 
 require_once($_SERVER['DOCUMENT_ROOT'] . "/entidad/RegistroAsistente.php");
-use entidad\RegistroAsistente;
 use Exception;
 use PDO;
 
 class ORMRegistro
 {
-    protected string $tabla = "registro";
+    protected string $tabla = "registro_asistente";
     protected string $pk = "id";
     protected PDO $pdo;
 
@@ -31,7 +30,7 @@ class ORMRegistro
     public function get( string $id )
     {
         $sql = "SELECT id, email, fecha_inscripcion, actividad 
-                FROM registro_asistente 
+                FROM {$this->tabla} 
                 WHERE id = :id";
 
         $stmt = $this->pdo->prepare($sql);
@@ -39,7 +38,7 @@ class ORMRegistro
 
         if( $stmt->execute() )
         {
-            $registro = new RegistroAsistente($stmt->fetch());
+            $registro = $stmt->fetch();
             return $registro;
         }
         else throw new Exception("Error en la ejecución de la consulta 'get'.");
@@ -49,27 +48,21 @@ class ORMRegistro
     public function getAll()
     {
         $sql = "SELECT id, email, fecha_inscripcion, actividad
-                FROM registro_asistente";
+                FROM {$this->tabla}";
 
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->pdo->prepare($sql);
 
-        $registros = [];
         if( $stmt->execute() )
-        {
-            foreach( $stmt->fetch() as $registro )
-                array_push($registros, new RegistroAsistente($registro));
-            
-        }
-        return $registros;
+            return $stmt->fetchAll();
+        return [];
     }
 
     public function insert( array $datos )
     {
-        $sql = "INSERT INTO registro_asistente (id, email, fecha_inscripcion, actividad)
-                VALUES (:id, :email, :fecha_inscripcion, :actividad)";
+        $sql = "INSERT INTO {$this->tabla} (email, fecha_inscripcion, actividad)
+                VALUES (:email, :fecha_inscripcion, :actividad)";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue("id", $datos['id']);
         $stmt->bindValue("email", $datos['email']);
         $stmt->bindValue("fecha_inscripcion", $datos['fecha_inscripcion']);
         $stmt->bindValue("actividad", $datos['actividad']);
@@ -80,8 +73,9 @@ class ORMRegistro
 
     public function update( array $datos )
     {
-        $sql = "UPDATE TABLE registro_asistente
-                SET id = :id, email = :email, fecha_inscripcion = :fecha_inscripcion, actividad = :actividad";
+        $sql = "UPDATE {$this->tabla}
+                SET email = :email, fecha_inscripcion = :fecha_inscripcion, actividad = :actividad
+                WHERE id = :id";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue("id", $datos['id']);
@@ -95,11 +89,11 @@ class ORMRegistro
 
     public function delete( string $id )
     {
-        $sql = "DELETE FROM registro_asistente
+        $sql = "DELETE FROM {$this->tabla}
                 WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam("id", $id);
+        $stmt->bindValue("id", $id);
 
         if( $stmt->execute() ) return true;
         return false;
