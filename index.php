@@ -1,5 +1,38 @@
 <?php
+/*
+Peticiones
+----------
+
+Main            =>  formulario con correo del usuario; idp "Identificar",
+                    Si ya existe sesión, se destruye.
+Identificar     =>  se muestran los registros existentes en una tabla y 
+un formulario para ingresar datos de nuevo registro 
+con idp "Registrar".
+
+Registrar       =>  se recogen los datos y se insertan a la db. Formulario 
+para volver a inicio y "desidentificar al usuario". idp 
+"Main"
+*/
+
+require_once($_SERVER['DOCUMENT_ROOT'] . "/util/Autocarga.php");
+
+use util\Autocarga;
+use mvc\controlador\Controlador;
+
+Autocarga::registra_autocarga();
+
+$controlador = new Controlador();
+
+$controlador->gestiona_peticion();
+
+?>
+
+
+<?php
+
 session_start();
+
+
 
 if( $_SERVER['REQUEST_METHOD'] == "POST" && $_POST['operacion'] == "cerrar" ) {
     $params = session_get_cookie_params();

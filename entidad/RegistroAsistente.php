@@ -1,6 +1,6 @@
 <?php
 
-namespace exra621\entidad;
+namespace entidad;
 
 class RegistroAsistente {
 

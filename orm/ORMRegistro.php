@@ -1,76 +1,109 @@
 <?php
-namespace exra621\orm;
 
-use exra621\entidad\RegistroAsistente;
-use PDOException;
+namespace orm;
+
+require_once($_SERVER['DOCUMENT_ROOT'] . "/entidad/RegistroAsistente.php");
+use entidad\RegistroAsistente;
+use Exception;
 use PDO;
 
-class ORMRegistro {
+class ORMRegistro
+{
+    protected string $tabla = "registro";
+    protected string $pk = "id";
+    protected PDO $pdo;
 
-    protected const TABLA = "registro_asistente";
-    protected const PK = "id";
-
-    private PDO $pdo;
-
-    public function __construct() {
-        $dsn = "mysql:host=192.168.12.71;dbname=examen";
-        $usuario = "examen";
+    public function __construct()
+    {
+        $dsn = "mysql:host=localhost;dbname=dbregistros";
+        $usuario = "usuario";
         $clave = "usuario";
         $opciones = [
             PDO::ATTR_CASE => PDO::CASE_LOWER,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ];
+        ];    
 
         $this->pdo = new PDO($dsn, $usuario, $clave, $opciones);
     }
 
-    public function insertar( RegistroAsistente $registro ): bool {
-        $datos = $registro->toArray();
+    public function get( string $id )
+    {
+        $sql = "SELECT id, email, fecha_inscripcion, actividad 
+                FROM registro_asistente 
+                WHERE id = :id";
 
-        try{
-            $stmt = $this->pdo->prepare("INSERT INTO registro_asistente (id, email, fecha_inscripcion, actividad) 
-                                         VALUES (:id, :email, :fecha_inscripcion, :actividad)");
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue("id", $id);
 
-            $stmt->bindValue(":id", $datos['id']);
-            $stmt->bindValue(":email", $datos['email']);
-            $stmt->bindValue(":fecha_inscripcion", $datos['fecha_inscripcion']);
-            $stmt->bindValue(":actividad", $datos['actividad']);
-
-
-            if( $stmt->execute() && $stmt->rowCount() === 1 )
-                return true;
+        if( $stmt->execute() )
+        {
+            $registro = new RegistroAsistente($stmt->fetch());
+            return $registro;
         }
-        catch( PDOException $pdoe ) {
-            echo $pdoe->getMessage();
-            exit($pdoe->getCode());
-        }
+        else throw new Exception("Error en la ejecución de la consulta 'get'.");
 
-        return false;
     }
 
-    public function listar( string $email ): array {
+    public function getAll()
+    {
+        $sql = "SELECT id, email, fecha_inscripcion, actividad
+                FROM registro_asistente";
+
+        $stmt = $this->pdo->query($sql);
+
         $registros = [];
-
-        $sql = "SELECT * FROM registro_asistente WHERE email = :email";
-        
-        try{
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindValue(":email", $email);
-
-            if( $stmt->execute() ) {
-                $registros = $stmt->fetchAll();
-            }
+        if( $stmt->execute() )
+        {
+            foreach( $stmt->fetch() as $registro )
+                array_push($registros, new RegistroAsistente($registro));
+            
         }
-        catch( PDOException $pdoe ) {
-            echo $pdoe->getMessage();
-            exit($pdoe->getCode());
-        }
-
         return $registros;
     }
 
+    public function insert( array $datos )
+    {
+        $sql = "INSERT INTO registro_asistente (id, email, fecha_inscripcion, actividad)
+                VALUES (:id, :email, :fecha_inscripcion, :actividad)";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue("id", $datos['id']);
+        $stmt->bindValue("email", $datos['email']);
+        $stmt->bindValue("fecha_inscripcion", $datos['fecha_inscripcion']);
+        $stmt->bindValue("actividad", $datos['actividad']);
+
+        if( $stmt->execute() ) return true;
+        return false;
+    }
+
+    public function update( array $datos )
+    {
+        $sql = "UPDATE TABLE registro_asistente
+                SET id = :id, email = :email, fecha_inscripcion = :fecha_inscripcion, actividad = :actividad";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue("id", $datos['id']);
+        $stmt->bindValue("email", $datos['email']);
+        $stmt->bindValue("fecha_inscripcion", $datos['fecha_inscripcion']);
+        $stmt->bindValue("actividad", $datos['actividad']);
+
+        if( $stmt->execute() ) return true;
+        return false;
+    }
+
+    public function delete( string $id )
+    {
+        $sql = "DELETE FROM registro_asistente
+                WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam("id", $id);
+
+        if( $stmt->execute() ) return true;
+        return false;
+    }
 }
 
 ?>
